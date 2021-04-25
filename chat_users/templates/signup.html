@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<form action="signup" method="post" style="margin-top:80px;"
+      class="form-horizontal" name="signupForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if messages %}
+    {% for message in messages %}
+    <script>
+        alert("{{message}}");
+    </script>
+    {% endfor %}
+    {% endif %}
+    {% for form_element in form %}
+    <div class="form-group {% if form_element.errors %} has-error {% endif %}">
+        <label class="control-label col-sm-2">{{ form_element.label }} : </label>
+        <div class="col-sm-4">
+            {{ form_element.as_widget }}
+        </div>
+
+        <span class="help-block" id="{{ form_element.id_for_label}}_span">{{form_element.errors}}</span>
+
+    </div>
+    {% endfor %}
+    <div class="col-sm-offset-3 col-sm-2">
+        <input type="submit" value="SignUp" onmouseenter="return (signupFormValidate());" style="border-radius:5px;background-color:orange;"/>
+    </div>
+</form>
+{% endblock %}

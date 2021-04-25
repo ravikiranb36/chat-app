@@ -1,0 +1,39 @@
+{% load static %}
+<div class="chatter-info" historyId="{{ history.id }}" userPic="{{ user.pic.url }}">
+    <img src="{{ history.friend.pic.url }}">
+    <Contact>{{ history.friend.get_full_name }}</Contact>
+</div>
+<div class="chat-messages" id="chat-messages">
+{% for message in messages %}
+    {% if message.author != user %}
+    <div id="chat-receive row" >
+
+            <div class="message-container message-receive receive">
+                    <img class="chat-img right" src="{{ message.author.pic.url }}">
+                    <p class="right" id="received-message">
+                        <!img class="chat-attach-img" src="{% static 'images/ravi.jpg' %}"><br>
+                        {{ message.msg }}
+                        <sub>{{ message.timestamp }}</sub>
+                    </p>
+                </div>
+
+    </div>
+    {% else %}
+        <div class="chat-sent row">
+
+                <div class="message-container message-sent sent">
+                    <img class="chat-img left" id="sender-pic" src="{{ user.pic.url }}">
+                    <span class="left sent-message">
+                        <!img class="chat-attach-img" src="{% static 'images/ravi.jpg' %}"><br>
+                        {{ message.msg }}
+                            <sub>{{ message.timestamp }}</sub>
+                    </span>
+                </div>
+
+        </div>
+    {% endif %}
+{% endfor %}
+  </div>
+<script type="text/javascript">
+
+</script>

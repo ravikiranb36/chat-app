@@ -1,0 +1,15 @@
+{% load static %}
+<ul id="contactList">
+    <a href="#" onclick="$('#contactList').css('display','none');" style="font-size:20px;text-decoration:none;color:red;">&times;</a>
+  {% for contact in contacts %}
+  <li>
+      <a class="contactListLink" href="#" id="{{ contact.pk }}" onclick="createHistory({{ contact.phone_number }});$('#contactList').css('display','none');"
+         phone_number="{{ contact.phone_number }}" title="{{ contact}}">
+            <span>
+                  <img src="{{ contact.pic.url }}">
+                  <span><Contact>{{ contact.get_full_name }}</Contact></span><br>
+            </span>
+      </a>
+  </li>
+  {% endfor %}
+</ul>

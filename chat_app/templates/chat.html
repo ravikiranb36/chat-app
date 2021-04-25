@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="chat-app-container">
+    <div class="chat-app">
+        <div class="pro">
+            <a href="#" onclick="$('#profile').trigger('click')"><img
+                    src="{% firstof user.pic.url static 'images/default-pro-pic.jpg' %}"></a>
+            <p><b>{{ user }}</b><br>
+                <span id="online">online</span>
+                <a href="#" onclick="$('.addContactDiv').css('display','block')" style="position:absolute;right:0px;" title="Add to contact">
+                    <span class="fa fa-user-plus" style="font-size:24px;"></span>
+                </a>
+            </p>
+
+        </div>
+        <div class="search-contact">
+            <span class="glyphicon glyphicon-search"></span>
+            <input id="contactSearchInput" onkeyup="filterHistory()" placeholder="&#x2315 Search contact" type="text">
+        </div>
+        <div class="chat-history">
+            <form id="chat-history_form">
+                {% csrf_token %}
+                <ul id="historys">
+                    {% if historys %}
+                    {% for history in historys %}
+                    <li id="historyList">
+                        <a class="history_link" href="#" id="{{ history.pk }}" onclick="createChat({{ history.pk }});"
+                           phone_number="{{ history.friend.phone_number }}" title="{{ history.friend }}">
+                            <span>
+                                <img src="{{ history.friend.pic.url }}">
+                                <span><Contact>{{ history.friend.get_full_name }}</Contact></span><br>
+                                <span><date>{{ history.timestamp }} </date></span><br>
+                                <span><Message>{{ history.msg }}</Message></span>
+                            </span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                    {% else %}
+                    <li>
+                        <span class="no-conv">
+                            <p>No conversations</p>
+                        </span>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </form>
+        </div>
+        <a href="#" id="addMessage" onclick="getContacts()">
+            <span class="fa fa-envelope-o"></span>
+        </a>
+    </div>
+    <div class="chat_body" id="chat_body">
+    <!This is the chat messages body>
+
+    </div>
+    <div>
+        <nav class="nav navbar-default navbar-fixed-bottom" style="padding-bottom:5px;">
+            <form id="message-in-form">
+                {% csrf_token %}
+                <span style="font-size:30px;margin-right:30px;">&#128512;</span>
+                    <input autocomplete="off" class="message-input" id="message-in"
+                           placeholder="Type message" type="text">
+                    <button id="send-btn" style="border:none;" type="submit">
+                        <span class="glyphicon glyphicon-send"
+                              style="color:blue;font-size:30px;"></span>
+                    </button>
+            </form>
+        </nav>
+    </div>
+
+    <div class="profile" id="profile-info">
+        <img src="{{ user.pic.url }}">
+        <table align="center">
+            <tr>
+                <th>First Name : </th>
+                <td>{{ user.first_name }}</td>
+            </tr>
+            {% if user.last_name %}
+            <tr>
+                <th>Last Name : </th>
+                <td> {{ user.last_name }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>Email : </th>
+                <td>{{ user.email }}</td>
+            </tr>
+            <tr>
+                <th>Phone : </th>
+                <td>{{ user.phone_number }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="addContactDiv" title="close">
+        <span class="closeX"
+              onclick="$('.addContactDiv').css('display','none'); $('#searchResult').html('');$('#phoneNumberInput').val('')">&times;</span>
+        <input id="phoneNumberInput" placeholder="Phone Number" type="text">
+        <button id="addContactButton" onclick="checkPhoneNumber()">Add</button>
+        <p id="searchResult" style="padding:10px;font-weight: bold;"></p>
+    </div>
+    <div id="userContacts">
+
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+$(document).ready(function (){
+    const roomName = {{ user.pk }};
+            console.log("creating socket");
+            const chatSocket = new WebSocket(
+                'ws://'
+                + window.location.host
+                + '/ws/chat/'
+                + roomName
+                + '/'
+            );
+            chatSocket.onopen = () => {
+                             console.log("WebSocket open" );
+                             chatSocket.send('{"send_message":"sending message"}');
+                           };
+            chatSocket.onmessage = function(e) {
+                var data = JSON.parse(e.data);
+                if (data.receive_message){
+                    console.log("receive = " + data.receive_message);
+                }
+                    };
+
+                    chatSocket.onclose = function(e) {
+                        console.error('Chat socket closed unexpectedly');
+                    };
+});
+
+function createChat(historyId){
+            console.log(historyId);
+            $("#message-in-form").css("display","block");
+            $("#cht_body").css("background-color", "#40E0D0");
+            $.ajax({
+                type:'POST',
+                url:'/get-chat-history/',
+                data:{
+                historyId : historyId,
+                csrfmiddlewaretoken:csrftoken,
+                },
+                success:function(data){
+                $("#chat_body").html(data);
+                    }
+            });
+}
+
+function getContacts(){
+    $.ajax({
+        type:"POST",
+        url:"/getContacts",
+        data:{
+        csrfmiddlewaretoken: csrftoken,
+        },
+        success: function(data){
+        $("#userContacts").html(data);
+        },
+    });
+}
+
+</script>
+
+{% endblock %}
